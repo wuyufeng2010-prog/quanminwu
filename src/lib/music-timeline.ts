@@ -5,10 +5,14 @@ export function timelineAt(
   time: number,
   beatsPerBar: 4 | 8 = timeline.beatsPerBar,
 ) {
-  const beat = timeline.beats.findLast((item) => item.time <= time);
   const phrase = timeline.phrases.find(
     (item) => time >= item.start && time < item.end,
   );
+  const beat = phrase
+    ? timeline.beats.findLast(
+        (item) => item.time <= time && item.time >= phrase.start,
+      )
+    : null;
   return {
     beat: beat
       ? {

@@ -54,6 +54,9 @@ function PlayerSession({
   const videoRef = useRef<HTMLVideoElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const keyboardInteraction = useRef(false);
+  const lastInteraction = useRef(0);
+  const immersiveTrigger = useRef<HTMLButtonElement>(null);
+  const immersiveExit = useRef<HTMLButtonElement>(null);
   const urls = useRef(new Set<string>());
   const pendingTime = useRef(saved?.time ?? 0);
   const resumePlaying = useRef(false);
@@ -75,6 +78,7 @@ function PlayerSession({
   );
   const [failed, setFailed] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [immersive, setImmersive] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [message, setMessage] = useState(
     saved
@@ -122,7 +126,7 @@ function PlayerSession({
       pointA,
       pointB,
       looping,
-      technical,
+      technical: technical && !locals[view],
       updatedAt: new Date().toISOString(),
     };
   }, [
@@ -137,6 +141,7 @@ function PlayerSession({
     pointB,
     looping,
     technical,
+    locals,
   ]);
   useEffect(() => {
     const ownedUrls = urls.current;
@@ -161,19 +166,46 @@ function PlayerSession({
     };
   }, [course.id]);
   useEffect(() => {
+    if (!immersive) return;
+    const previousOverflow = document.body.style.overflow;
+    const trigger = immersiveTrigger.current;
+    document.body.style.overflow = "hidden";
+    immersiveExit.current?.focus();
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !document.fullscreenElement)
+        setImmersive(false);
+    };
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", escape);
+      if (trigger?.isConnected) trigger.focus();
+    };
+  }, [immersive]);
+  useEffect(() => {
     const changed = () =>
       setFullscreen(document.fullscreenElement === frameRef.current);
     document.addEventListener("fullscreenchange", changed);
     return () => document.removeEventListener("fullscreenchange", changed);
   }, []);
   useEffect(() => {
-    if (!playing || !looping || !validLoop) return;
+    if (!playing) return;
     let request: number;
-    const tick = () => {
+    let sampledAt = 0;
+    const tick = (now: number) => {
       const video = videoRef.current;
       if (video) {
-        const position = video.currentTime - offset;
-        if (position >= b || position < a) video.currentTime = a + offset;
+        let position = Math.max(0, video.currentTime - offset);
+        if (looping && validLoop && (position >= b || position < a)) {
+          video.currentTime = a + offset;
+          position = a;
+        }
+        // Reuse the media clock at most 10 times a second; no independent beat timer.
+        if (now - sampledAt >= 100) {
+          sampledAt = now;
+          pendingTime.current = position;
+          setTime(position);
+        }
       }
       request = requestAnimationFrame(tick);
     };
@@ -182,11 +214,19 @@ function PlayerSession({
   }, [playing, looping, validLoop, a, b, offset]);
   useEffect(() => {
     if (!playing || hidden) return;
-    const timer = setTimeout(() => {
-      // Keep controls visible while a keyboard user is interacting with them.
-      if (!keyboardInteraction.current) setHidden(true);
-    }, 4500);
-    return () => clearTimeout(timer);
+    lastInteraction.current = Date.now();
+    const timer = setInterval(() => {
+      const editing =
+        frameRef.current?.contains(document.activeElement) &&
+        document.activeElement?.matches("input[type=number], select");
+      if (
+        !keyboardInteraction.current &&
+        !editing &&
+        Date.now() - lastInteraction.current >= 4500
+      )
+        setHidden(true);
+    }, 250);
+    return () => clearInterval(timer);
   }, [playing, hidden]);
 
   function prepareSwitch() {
@@ -237,8 +277,7 @@ function PlayerSession({
       setMessage("请选择视频文件，例如 MP4 或 WebM。");
       return;
     }
-    prepareSwitch();
-    setTechnical(false);
+    if (target === view) prepareSwitch();
     const previous = locals[target];
     const url = URL.createObjectURL(file);
     urls.current.add(url);
@@ -311,26 +350,66 @@ function PlayerSession({
           <p className="eyebrow">DANCE PRACTICE / 教学播放器原型</p>
           <h2 id="video-title">把每个动作，慢慢看清楚</h2>
         </div>
-        <Link className="text-link" href={`/courses/${course.id}/questions`}>
-          向老师提问（演示） →
-        </Link>
+        <div className="player-entry-actions">
+          <button
+            ref={immersiveTrigger}
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setHidden(false);
+              setImmersive(true);
+            }}
+          >
+            沉浸跟练
+          </button>
+          <Link className="text-link" href={`/courses/${course.id}/questions`}>
+            向老师提问（演示） →
+          </Link>
+        </div>
       </div>
       <p className="player-intro">
         暂无授权教学视频。三视角分别配置，默认背面；对镜拍摄与左右镜像是两种不同功能。
       </p>
       <div
-        className={`player-frame ${hidden ? "controls-hidden" : ""}`}
+        className={`player-frame ${hidden ? "controls-hidden" : ""} ${immersive ? "is-immersive" : ""}`}
         ref={frameRef}
-        role="region"
+        role={immersive ? "dialog" : "region"}
+        aria-modal={immersive ? true : undefined}
         aria-label="舞蹈视频播放器"
+        onKeyDown={(event) => {
+          if (!immersive || event.key !== "Tab") return;
+          const focusable = Array.from(
+            frameRef.current?.querySelectorAll<HTMLElement>(
+              "button:not(:disabled), input:not(:disabled), select:not(:disabled), summary, a[href]",
+            ) ?? [],
+          ).filter((element) => {
+            const closedDetails = element.closest("details:not([open])");
+            return (
+              element.getClientRects().length > 0 &&
+              (!closedDetails ||
+                (element.tagName === "SUMMARY" &&
+                  element.parentElement === closedDetails))
+            );
+          });
+          const first = focusable[0],
+            last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last?.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first?.focus();
+          }
+        }}
         onPointerMove={() => {
-          if (hidden) setHidden(false);
+          lastInteraction.current = Date.now();
         }}
         onKeyDownCapture={() => {
           keyboardInteraction.current = true;
         }}
         onPointerDownCapture={() => {
           keyboardInteraction.current = false;
+          lastInteraction.current = Date.now();
         }}
       >
         <div className="player-viewbar">
@@ -352,6 +431,58 @@ function PlayerSession({
           <span className="mirror-badge">
             {mirrored ? "镜像已开启 · 左右翻转" : "原始画面 · 镜像关闭"}
           </span>
+          {(immersive || fullscreen || hidden) && (
+            <button
+              type="button"
+              className="quick-play"
+              disabled={!ready}
+              onClick={() => {
+                if (playing) videoRef.current?.pause();
+                else void play();
+              }}
+            >
+              {playing ? "暂停跟练" : "开始跟练"}
+            </button>
+          )}
+          {(immersive || fullscreen) && (
+            <button
+              type="button"
+              className="quick-loop"
+              disabled={!ready || !currentSegment}
+              aria-pressed={looping}
+              onClick={() => {
+                if (looping) {
+                  setLooping(false);
+                  setMessage("循环已停止，继续正常播放。");
+                } else if (currentSegment) {
+                  setSegmentId(currentSegment.id);
+                  activateLoop(
+                    currentSegment.start,
+                    currentSegment.end,
+                    currentSegment.title,
+                  );
+                }
+              }}
+            >
+              {looping ? "停止循环" : "本段循环"}
+            </button>
+          )}
+          {(immersive || fullscreen) && (
+            <button
+              type="button"
+              ref={immersiveExit}
+              className="immersive-exit"
+              onClick={() => {
+                if (document.fullscreenElement)
+                  void document
+                    .exitFullscreen()
+                    .catch(() => setMessage("请使用浏览器返回键退出全屏。"));
+                setImmersive(false);
+              }}
+            >
+              退出跟练
+            </button>
+          )}
         </div>
         <div className="player-stage" onPointerDown={() => setHidden(false)}>
           {source && (
@@ -461,8 +592,22 @@ function PlayerSession({
                     : "课程素材"}
               </span>
               <DynamicWatermark session={session} time={time} />
+              {(immersive || fullscreen) && (
+                <span className="stage-mirror-status">
+                  {mirrored ? "镜像已开启 · 左右翻转" : "原始画面 · 镜像关闭"}
+                </span>
+              )}
             </>
           )}
+        </div>
+        <div className="player-coach">
+          <MusicCoach
+            timeline={course.music}
+            time={time}
+            mode={mode}
+            beatsPerBar={beatsPerBar}
+            active={ready && !locals[view]}
+          />
         </div>
         <button
           type="button"
@@ -539,6 +684,26 @@ function PlayerSession({
             >
               {mirrored ? "关闭镜像" : "开启镜像"}
             </button>
+            <button
+              type="button"
+              disabled={!ready || !currentSegment}
+              aria-pressed={looping}
+              onClick={() => {
+                if (looping) {
+                  setLooping(false);
+                  setMessage("循环已停止，继续正常播放。");
+                } else if (currentSegment) {
+                  setSegmentId(currentSegment.id);
+                  activateLoop(
+                    currentSegment.start,
+                    currentSegment.end,
+                    currentSegment.title,
+                  );
+                }
+              }}
+            >
+              {looping ? "停止单段循环" : "单段循环"}
+            </button>
             <button type="button" onClick={() => void toggleFullscreen()}>
               {fullscreen ? "退出全屏" : "全屏"}
             </button>
@@ -574,98 +739,98 @@ function PlayerSession({
               </select>
             </label>
           </div>
-          <MusicCoach
-            timeline={course.music}
-            time={time}
-            mode={mode}
-            beatsPerBar={beatsPerBar}
-          />
-          <fieldset className="loop-controls" disabled={!ready}>
-            <legend>
-              AB 段循环 <span>{looping ? "· 循环中" : "· 未开启"}</span>
-            </legend>
-            <div className="loop-fields">
-              <label>
-                A 起点（秒）
-                <input
-                  type="number"
-                  min="0"
-                  max={duration || 0}
-                  step="0.1"
-                  value={pointA}
-                  onChange={(event) => {
-                    setPointA(event.target.value);
+
+          <details className="advanced-loop" open={!immersive && !fullscreen}>
+            <summary>
+              自定义 AB 循环 <span>{looping ? "循环中" : "未开启"}</span>
+            </summary>
+            <fieldset className="loop-controls" disabled={!ready}>
+              <legend>
+                AB 段循环 <span>{looping ? "· 循环中" : "· 未开启"}</span>
+              </legend>
+              <div className="loop-fields">
+                <label>
+                  A 起点（秒）
+                  <input
+                    type="number"
+                    min="0"
+                    max={duration || 0}
+                    step="0.1"
+                    value={pointA}
+                    onChange={(event) => {
+                      setPointA(event.target.value);
+                      setLooping(false);
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPointA(
+                      (
+                        Math.floor(
+                          ((videoRef.current?.currentTime ?? offset) - offset) *
+                            10,
+                        ) / 10
+                      ).toFixed(1),
+                    );
                     setLooping(false);
                   }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  setPointA(
-                    (
-                      Math.floor(
-                        ((videoRef.current?.currentTime ?? offset) - offset) *
-                          10,
-                      ) / 10
-                    ).toFixed(1),
-                  );
-                  setLooping(false);
-                }}
-              >
-                当前设为 A
-              </button>
-              <label>
-                B 终点（秒）
-                <input
-                  type="number"
-                  min="0"
-                  max={duration || 0}
-                  step="0.1"
-                  value={pointB}
-                  onChange={(event) => {
-                    setPointB(event.target.value);
+                >
+                  当前设为 A
+                </button>
+                <label>
+                  B 终点（秒）
+                  <input
+                    type="number"
+                    min="0"
+                    max={duration || 0}
+                    step="0.1"
+                    value={pointB}
+                    onChange={(event) => {
+                      setPointB(event.target.value);
+                      setLooping(false);
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPointB(
+                      (
+                        Math.floor(
+                          ((videoRef.current?.currentTime ?? offset) - offset) *
+                            10,
+                        ) / 10
+                      ).toFixed(1),
+                    );
                     setLooping(false);
                   }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  setPointB(
-                    (
-                      Math.floor(
-                        ((videoRef.current?.currentTime ?? offset) - offset) *
-                          10,
-                      ) / 10
-                    ).toFixed(1),
-                  );
-                  setLooping(false);
-                }}
-              >
-                当前设为 B
-              </button>
-              <button type="button" onClick={() => activateLoop()}>
-                开启循环
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLooping(false);
-                  setPointA("");
-                  setPointB("");
-                  setMessage("AB 循环已取消，继续正常播放。");
-                }}
-              >
-                取消循环
-              </button>
-            </div>
-          </fieldset>
+                >
+                  当前设为 B
+                </button>
+                <button type="button" onClick={() => activateLoop()}>
+                  开启循环
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLooping(false);
+                    setPointA("");
+                    setPointB("");
+                    setMessage("AB 循环已取消，继续正常播放。");
+                  }}
+                >
+                  取消循环
+                </button>
+              </div>
+            </fieldset>
+          </details>
           <p className="player-status" role="status">
             {message}
           </p>
           <p className="player-orientation">
-            请手动横放手机；不强制锁定方向。自动收起控件后可触摸画面或按“显示播放控件”恢复。水印仅作演示，可被移除，不具备生产追溯能力。
+            沉浸跟练不依赖浏览器全屏。请手动横放手机；不强制锁定方向。自动收起控件后可触摸画面或按“显示播放控件”恢复。水印仅作演示，可被移除，不具备生产追溯能力。
           </p>
         </div>
       </div>
@@ -675,9 +840,11 @@ function PlayerSession({
         </p>
       )}
       <p className="player-intro">
-        {technical
-          ? "当前为24秒原创测试片与合成节拍，三份测试图不是舞蹈多机位。"
-          : "可用下方本地文件体验播放；任意文件与演示数拍不保证匹配。"}{" "}
+        {locals[view]
+          ? "当前为本地文件，未校准拍点，暂停显示演示数拍。"
+          : technical
+            ? "当前为24秒原创测试片与合成节拍，三份测试图不是舞蹈多机位。"
+            : "可用下方本地文件体验播放；任意文件与演示数拍不保证匹配。"}{" "}
         全程仅本机处理，不上传视频。位置、速度、视角与模式保存在当前浏览器。
       </p>
       <section className="segment-section" aria-labelledby="segment-title">

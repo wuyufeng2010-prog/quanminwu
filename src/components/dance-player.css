@@ -259,30 +259,6 @@
   overflow-wrap: anywhere;
   color: var(--muted);
 }
-.player-frame:fullscreen {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
-  background: #09120f;
-}
-.player-frame:fullscreen .player-stage {
-  flex: 1;
-  min-height: 100px;
-  aspect-ratio: auto;
-}
-.player-frame:fullscreen .player-stage video {
-  position: absolute;
-  inset: 0;
-}
-.player-frame:fullscreen .player-controls {
-  flex-shrink: 0;
-}
-.player-frame:fullscreen .player-viewbar {
-  flex-shrink: 0;
-}
 @media (max-width: 640px) {
   .player-viewbar {
     padding: 12px;
@@ -356,37 +332,6 @@
   }
   .player-toolbar {
     margin-block: 4px 8px;
-  }
-  .player-frame:fullscreen {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(310px, 42%);
-    grid-template-rows: auto 1fr;
-  }
-  .player-frame:fullscreen .player-viewbar {
-    grid-column: 1/-1;
-  }
-  .player-frame:fullscreen .player-stage {
-    height: 100%;
-    min-height: 0;
-  }
-  .player-frame:fullscreen .player-controls {
-    overflow: auto;
-  }
-  .player-frame:fullscreen .player-progress {
-    gap: 8px;
-  }
-  .player-frame:fullscreen .player-progress > label {
-    width: 100%;
-  }
-  .player-frame:fullscreen .loop-fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .player-frame:fullscreen .loop-fields label {
-    max-width: none;
-  }
-  .player-frame:fullscreen .player-orientation {
-    margin-bottom: 8px;
   }
 }
 .player-frame {
@@ -525,16 +470,6 @@
 .material-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
 }
-.player-frame:fullscreen.controls-hidden .player-stage {
-  grid-column: 1/-1;
-}
-.player-frame:fullscreen .controls-toggle {
-  align-self: start;
-}
-.player-frame:fullscreen {
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-}
 @media (max-width: 640px) {
   .segment-grid {
     grid-template-columns: 1fr;
@@ -575,34 +510,328 @@
   }
 }
 @media (orientation: landscape) and (max-height: 600px) {
-  .player-frame:fullscreen {
-    grid-template-rows: auto auto 1fr;
+}
+
+/* Immersive practice works without fullscreen or orientation-lock permissions. */
+.player-entry-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.player-coach {
+  padding: 8px 16px;
+  background: #15241f;
+}
+.player-coach .music-coach {
+  margin-bottom: 0;
+}
+.advanced-loop {
+  margin-block: 12px;
+}
+.advanced-loop > summary {
+  cursor: pointer;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid #64796b;
+  border-radius: 6px;
+}
+.advanced-loop > summary span {
+  float: right;
+  font-size: 13px;
+  color: #e3edcf;
+}
+.advanced-loop[open] > summary {
+  margin-bottom: 10px;
+}
+.player-frame:is(:fullscreen, .is-immersive) {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100%;
+  height: 100dvh;
+  border-radius: 0;
+  background: #09120f;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(100px, 1fr) auto auto minmax(0, 34dvh);
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-viewbar {
+  grid-row: 1;
+  padding: 8px 12px;
+  gap: 8px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-stage {
+  grid-row: 2;
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 0;
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-stage video {
+  position: absolute;
+  inset: 0;
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-coach {
+  grid-row: 3;
+  padding: 4px 12px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .controls-toggle {
+  grid-row: 4;
+  margin: 4px 12px;
+  justify-self: start;
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-controls {
+  grid-row: 5;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 8px 12px;
+}
+.player-frame:is(:fullscreen, .is-immersive).controls-hidden {
+  grid-template-rows: auto minmax(100px, 1fr) auto auto;
+}
+.immersive-exit {
+  margin-left: auto;
+}
+.player-frame:is(:fullscreen, .is-immersive) .music-coach {
+  padding: 6px 10px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .music-coach small {
+  display: none;
+}
+.player-frame:is(:fullscreen, .is-immersive) .music-coach p {
+  font-size: 14px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .coach-label {
+  font-size: 12px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-orientation {
+  font-size: 12px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-toolbar {
+  gap: 8px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .player-toolbar button {
+  white-space: nowrap;
+  padding-inline: 10px;
+  flex: 1 0 105px;
+  min-width: 105px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .practice-modes button {
+  white-space: nowrap;
+  flex: 1 0 90px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .speed-control {
+  flex: 1 0 105px;
+}
+.player-frame:is(:fullscreen, .is-immersive) .speed-control select {
+  flex: 1;
+  min-width: 0;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .player-frame:is(:fullscreen, .is-immersive) {
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 34%);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
   }
-  .player-frame:fullscreen .player-viewbar {
+  .player-frame:is(:fullscreen, .is-immersive) .player-stage {
+    grid-column: 1;
+    grid-row: 1/-1;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .player-viewbar {
+    grid-column: 2;
     grid-row: 1;
+    gap: 6px;
   }
-  .player-frame:fullscreen .controls-toggle {
+  .player-frame:is(:fullscreen, .is-immersive) .view-switch {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .view-switch button {
+    font-size: 14px;
+    white-space: nowrap;
+    padding-inline: 4px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .view-switch small {
+    display: block;
+    font-size: 11px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .mirror-badge {
+    font-size: 11px;
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .immersive-exit {
+    font-size: 14px;
+    min-height: 44px;
+    padding: 6px 10px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .player-coach {
+    grid-column: 2;
     grid-row: 2;
-    grid-column: 1/-1;
-    margin-block: 0 4px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .controls-toggle {
+    grid-column: 2;
+    grid-row: 3;
+    margin-block: 3px;
     min-height: 44px;
   }
-  .player-frame:fullscreen .player-stage {
-    grid-row: 3;
+  .player-frame:is(:fullscreen, .is-immersive) .player-controls {
+    grid-column: 2;
+    grid-row: 4;
   }
-  .player-frame:fullscreen .player-controls {
-    grid-row: 3;
+  .player-frame:is(:fullscreen, .is-immersive) .player-progress > label {
+    width: 100%;
   }
-  .player-frame:fullscreen .music-coach {
-    padding: 8px;
+  .player-frame:is(:fullscreen, .is-immersive) .player-progress {
+    gap: 5px;
   }
-  .player-frame:fullscreen .player-toolbar {
-    gap: 8px;
-  }
-  .player-frame:fullscreen .player-toolbar button {
-    padding-inline: 10px;
-  }
-  .player-frame:fullscreen .mirror-badge {
+  .player-frame:is(:fullscreen, .is-immersive) .player-coach .music-coach > p {
+    display: block;
     font-size: 12px;
+    line-height: 1.5;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .coach-label {
+    display: none;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .view-switch button {
+    font-size: 13px;
+    white-space: normal;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .quick-play,
+  .player-frame:is(:fullscreen, .is-immersive) .quick-loop,
+  .player-frame:is(:fullscreen, .is-immersive) .immersive-exit {
+    font-size: 13px;
+    padding-inline: 6px;
+    min-height: 44px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .quick-play {
+    background: #e3edcf;
+    color: #1e3528;
+  }
+
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden .player-viewbar {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden .view-switch {
+    width: auto;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden .player-stage {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden .player-coach {
+    grid-column: 1;
+    grid-row: 3;
+    padding-right: 150px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden
+    .controls-toggle {
+    position: absolute;
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    margin: 0;
+    grid-row: auto;
+    grid-column: auto;
+  }
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden
+    .music-coach
+    > div {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+}
+
+.stage-mirror-status {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  max-width: 45%;
+  padding: 3px 8px;
+  background: #09120fcc;
+  color: #e3edcf;
+  font-size: 11px;
+  pointer-events: none;
+}
+.player-frame:is(:fullscreen, .is-immersive) .mirror-badge {
+  display: none;
+}
+.player-frame:is(:fullscreen, .is-immersive) .quick-play,
+.player-frame:is(:fullscreen, .is-immersive) .quick-loop,
+.player-frame:is(:fullscreen, .is-immersive) .immersive-exit {
+  flex: 1;
+  white-space: nowrap;
+}
+.player-frame:is(:fullscreen, .is-immersive).controls-hidden .quick-play,
+.player-frame:is(:fullscreen, .is-immersive).controls-hidden .quick-loop,
+.player-frame:is(:fullscreen, .is-immersive).controls-hidden .immersive-exit {
+  flex: 0 0 auto;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .player-frame:is(:fullscreen, .is-immersive) .quick-play,
+  .player-frame:is(:fullscreen, .is-immersive) .quick-loop,
+  .player-frame:is(:fullscreen, .is-immersive) .immersive-exit {
+    padding-inline: 4px;
+    min-width: 0;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .player-controls {
+    display: flex;
+    flex-direction: column;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .player-controls[hidden] {
+    display: none;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .player-toolbar {
+    order: -2;
+    margin-top: 0;
+    flex-shrink: 0;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .player-progress {
+    order: -1;
+    flex-shrink: 0;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .player-toolbar button,
+  .player-frame:is(:fullscreen, .is-immersive) .speed-control {
+    flex: 1 0 88px;
+    min-width: 88px;
+    font-size: 13px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .speed-control {
+    gap: 4px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .speed-control select {
+    padding-inline: 4px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .music-coach > div > p {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 6px;
+    align-items: center;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .player-frame:is(:fullscreen, .is-immersive) .beat-number {
+    font-size: 24px;
+    min-width: 28px;
+  }
+  .player-frame:is(:fullscreen, .is-immersive).controls-hidden
+    .music-coach
+    > div
+    > p {
+    display: block;
+    font-size: 14px;
   }
 }

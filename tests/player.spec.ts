@@ -428,3 +428,145 @@ test("测试片重复加载可继续使用，整段末尾循环不会停住", as
     await page.locator("video").evaluate((v: HTMLVideoElement) => v.paused),
   ).toBe(false);
 });
+
+test("依次选择三视角本地素材不打断当前播放，未校准素材不显示假数拍", async ({
+  page,
+}) => {
+  await page.goto(route);
+  await page.getByText("本地素材与演示说明", { exact: true }).click();
+  await page
+    .getByLabel("背面示范视频", { exact: true })
+    .setInputFiles(path.resolve("public/demo/back.mp4"));
+  await expect(
+    page.getByRole("button", { name: "播放", exact: true }),
+  ).toBeEnabled();
+  await seek(page, 4);
+  await page
+    .getByLabel("正面示范视频", { exact: true })
+    .setInputFiles(path.resolve("public/demo/front.mp4"));
+  await page
+    .getByLabel("对镜示范视频", { exact: true })
+    .setInputFiles(path.resolve("public/demo/mirror.mp4"));
+  await expect(
+    page.getByRole("button", { name: "播放", exact: true }),
+  ).toBeEnabled();
+  expect(
+    await page
+      .locator("video")
+      .evaluate((video: HTMLVideoElement) => video.currentTime),
+  ).toBeCloseTo(4, 0);
+  await expect(page.getByTestId("beat-count")).toHaveCount(0);
+  await expect(
+    page.getByText("等待匹配的教学时间轴", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "播放", exact: true }).click();
+  await expect
+    .poll(() =>
+      page
+        .locator("video")
+        .evaluate((video: HTMLVideoElement) => video.currentTime),
+    )
+    .toBeGreaterThan(4.2);
+});
+
+test("沉浸跟练不依赖全屏权限，低高度横屏保留整幅画面和直接循环", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 667, height: 320 });
+  await loadTechnical(page);
+  await page.evaluate(() =>
+    Object.defineProperty(document, "fullscreenEnabled", {
+      configurable: true,
+      value: false,
+    }),
+  );
+  await seek(page, 4);
+  await page.getByRole("button", { name: "沉浸跟练", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "舞蹈视频播放器" });
+  await expect(dialog).toBeVisible();
+  const bounds = await dialog.boundingBox();
+  expect(bounds?.width).toBe(667);
+  expect(bounds?.height).toBe(320);
+  const speedBounds = await page.getByLabel("倍速", { exact: true }).boundingBox();
+  expect(speedBounds!.y).toBeGreaterThanOrEqual(0);
+  expect(speedBounds!.y + speedBounds!.height).toBeLessThanOrEqual(320);
+
+  expect(
+    await page
+      .locator("video")
+      .evaluate((element) => getComputedStyle(element).objectFit),
+  ).toBe("contain");
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe(
+    "hidden",
+  );
+  expect(
+    await page
+      .locator(".advanced-loop")
+      .evaluate((details: HTMLDetailsElement) => details.open),
+  ).toBe(false);
+  await page.getByRole("button", { name: "本段循环", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "停止循环", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".player-status")).toContainText("完整动作示范");
+  await page.getByRole("button", { name: "退出跟练", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "沉浸跟练", exact: true }),
+  ).toBeFocused();
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
+});
+
+test("沉浸收起后数拍常驻且可一键暂停，键盘焦点与Escape退出", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await loadTechnical(page);
+  await page.getByRole("button", { name: "音乐跟练", exact: true }).click();
+  await page.getByRole("button", { name: "沉浸跟练", exact: true }).click();
+  await page.getByRole("button", { name: "播放", exact: true }).click();
+  await page.getByRole("button", { name: "收起播放控件", exact: true }).click();
+  await expect(page.getByTestId("beat-count")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "暂停跟练", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "暂停跟练", exact: true }).click();
+  expect(
+    await page
+      .locator("video")
+      .evaluate((video: HTMLVideoElement) => video.paused),
+  ).toBe(true);
+  await expect(page.locator("#dance-controls")).toBeVisible();
+  await page.locator(".advanced-loop > summary").focus();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("group", { name: "示范视角" }).getByRole("button").first(),
+  ).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.locator(".advanced-loop > summary")).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "沉浸跟练", exact: true }),
+  ).toBeFocused();
+});
+
+test("触控交互重置闲置时间，编辑AB时不自动隐藏", async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 844, height: 390 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await context.newPage();
+  await page.goto("http://127.0.0.1:3100" + route);
+  await page.getByRole("button", { name: "加载技术测试片" }).first().tap();
+  await page.getByRole("button", { name: "播放", exact: true }).tap();
+  await page.waitForTimeout(3000);
+  await page.getByRole("button", { name: "慢速 0.75x", exact: true }).tap();
+  await page.waitForTimeout(2000);
+  await expect(page.locator("#dance-controls")).toBeVisible();
+  await page.getByLabel("A 起点（秒）").tap();
+  await page.waitForTimeout(4800);
+  await expect(page.locator("#dance-controls")).toBeVisible();
+  await context.close();
+});
