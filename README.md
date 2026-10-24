@@ -47,11 +47,17 @@ export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="C:/Program Files/Google/Chrome/Appli
 npm run test:e2e
 ```
 
-Chrome 也可能是用户级安装，例如 `C:\Users\<用户名>\AppData\Local\Google\Chrome\Application\chrome.exe`；路径以本机实际位置为准（命令行可用 `where chrome` 查询）。
+Chrome 通常为系统级安装：`C:\Program Files\Google\Chrome\Application\chrome.exe`；少数为用户级安装：`%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe`。路径以本机实际位置为准，可用 PowerShell 确认：
+
+```powershell
+Test-Path "C:\Program Files\Google\Chrome\Application\chrome.exe"   # 返回 True 即可直接填入上面的变量
+```
+
+> Chrome 安装后通常**不在** `PATH` 中，因此 `where chrome`（cmd）在本机会返回“找不到文件”，不要据此判断没有安装 Chrome。
 
 > **PowerShell 注意**：Windows 客户端默认执行策略为 `Restricted`，此时裸写 `npm` / `npx` 会因 `.ps1` 包装脚本被拦截而报 `PSSecurityException`；改用 `npm.cmd` / `npx.cmd` 即可正常运行。`$env:VAR = "值"` 这种赋值不受执行策略影响，反斜杠路径会原样传给 Node 与 Playwright（本机实测：Node 读到的值即为该路径，`existsSync` 为 `true`）。
 
-实测 Windows 11 + Node 22.22.2 + 本机 Chrome 155 可跑通全部 18 条用例，不需要下载 Playwright 自带浏览器。
+实测 Windows 11 + Node 22.22.2 + 本机 Chrome 155.0.8059.85 可跑通全部 18 条用例（该结论来自 **Git Bash** 下的完整运行），不需要下载 Playwright 自带浏览器。
 
 ## 推荐演示流程
 
