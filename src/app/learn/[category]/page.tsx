@@ -1,10 +1,86 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { categories } from "@/data/categories";
-export function generateStaticParams() { return categories.map(c => ({ category: c.slug })); }
-export default async function LearningPage({ params }: { params: Promise<{ category: string }> }) {
+import SiteNav from "@/components/site-nav";
+import {
+  courses,
+  groups,
+  foundationModules,
+  levelNames,
+  folkStyles,
+  interestTopics,
+  supportTopics,
+} from "@/data/courses";
+export function generateStaticParams() {
+  return [
+    ...groups.map((group) => ({ category: group.slug })),
+    { category: "posture" },
+    { category: "rhythm" },
+  ];
+}
+export default async function LearningPage({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}) {
   const { category } = await params;
-  const item = categories.find(c => c.slug === category);
-  if (!item) notFound();
-  return <main className="shell learning-page"><Link className="text-link" href="/#explore">← 返回学习方向</Link><p className="eyebrow">全民舞 · 学习方向演示</p><h1>{item.title}</h1><p className="learning-description">{item.description}</p><div className="demo-notice">这是演示页面，不是真实课程。暂未接入视频、报名、支付或学员账户。</div><section aria-labelledby="video-title"><h2 id="video-title">横屏教学区域 · 功能规划</h2><div className="video-placeholder"><span aria-hidden="true">▷</span><p>未来在此呈现横屏教学视频</p><small>当前没有可播放视频</small></div><p>计划支持：动作分解、倍速、选段循环与断点续播。</p></section><nav className="learning-nav" aria-label="学习页面规划"><a href="#outline">内容规划</a><a href="#practice">练习提示</a><a href="#questions">答疑规划</a></nav><section id="outline"><h2>内容规划</h2><p>拟围绕{item.tags.join("、")}组织内容。实际课程需经教学审核后发布。</p></section><section id="practice"><h2>练习提示</h2><p>请在安全、宽敞的空间练习，先热身，并根据自身情况调整强度。</p></section><section id="questions"><h2>答疑规划</h2><p>学员提问与教师回复功能尚未开放，目前不会收集或保存任何问题。</p></section></main>;
+  const group =
+    groups.find((item) => item.slug === category) ??
+    (["posture", "rhythm"].includes(category)
+      ? groups.find((item) => item.code === "S")
+      : undefined);
+  if (!group) notFound();
+  const selected = courses.filter((course) => course.group === group.code);
+  const topics =
+    group.code === "F"
+      ? foundationModules
+      : group.code === "A"
+        ? levelNames
+        : group.code === "B"
+          ? [...levelNames, ...folkStyles]
+          : group.code === "C"
+            ? interestTopics
+            : supportTopics;
+  return (
+    <>
+      <SiteNav />
+      <main className="shell section">
+        <Link className="text-link" href="/learn">
+          ← 全部学习方向
+        </Link>
+        <p className="eyebrow">课程分类 · 演示</p>
+        <h1 className="page-title">{group.title}</h1>
+        <p className="page-lead">{group.subtitle}</p>
+        <div className="topic-list">
+          {topics.map((topic) => (
+            <span key={topic}>{topic}</span>
+          ))}
+        </div>
+        {group.code === "F" && (
+          <p className="page-lead">
+            以下8节导学结合动态热身、主体教学与课后放松，交叉覆盖基础模块，不设置理论先修门槛。
+          </p>
+        )}
+        <p className="demo-notice">
+          课程标题与目录仅作演示，未发布真实教学视频。专业主线的L2—L4目前仅为等级规划；可进入启蒙演示体验播放器。
+        </p>
+        <div className="course-grid">
+          {selected.map((course, i) => (
+            <Link
+              className="catalog-card"
+              href={`/courses/${course.id}`}
+              key={course.id}
+            >
+              <span className="sample-label">
+                演示课程 · {String(i + 1).padStart(2, "0")}
+              </span>
+              <h2>{course.title}</h2>
+              <p>{course.description}</p>
+              <span>{course.level}</span>
+              <span className="text-link">查看章节与课程 →</span>
+            </Link>
+          ))}
+        </div>
+      </main>
+    </>
+  );
 }
