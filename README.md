@@ -1,12 +1,12 @@
 # 全民舞 QuanMinWu · V3.3 教学播放器原型
 
-面向18—65岁成人的中国舞教学平台。保留 Next.js 16 App Router、React 19、TypeScript、Tailwind CSS 4 技术体系；手机竖屏选课，横屏观看，平板与桌面同样可用。
+面向18—65岁成人的中国舞在线教学平台原型，**尚未正式上线**。保留 Next.js 16 App Router、React 19、TypeScript、Tailwind CSS 4 技术体系；手机竖屏选课，横屏观看，平板与桌面同样可用。
 
 **这是可操作的教学技术原型。没有正式教学内容、真实账号、付费课程、AI分析、教师服务或生产版权保护。**
 
 ## 本地运行
 
-推荐 Node.js 24 LTS（`.nvmrc`），使用已提交的 npm 锁文件：
+推荐 Node.js 24 LTS（`.nvmrc`）。Node.js 22.22.2 已实测可完整跑通 `npm ci`、`lint`、`typecheck`、`build`、`test:e2e`（`package.json` 的 `engines` 要求 `>=22.0.0`），不是阻塞项；使用已提交的 npm 锁文件：
 
 ```bash
 npm ci
@@ -23,7 +23,41 @@ npm run start
 npm run test:e2e
 ```
 
-`typecheck` 会先生成 Next.js 路由类型；`test:e2e` 需先构建，会自行在3100端口启动并停止生产服务。测试使用 Playwright，优先使用 `/usr/bin/chromium`；也可指定 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`，否则先执行 `npx playwright install chromium` 安装浏览器。自动化不需要 FFmpeg，测试视频已包含在仓库内。
+`typecheck` 会先生成 Next.js 路由类型；`test:e2e` 需先构建，会自行在3100端口启动并停止生产服务。自动化不需要 FFmpeg，测试视频已包含在仓库内。
+
+### 测试浏览器的来源与 Windows 配置
+
+`playwright.config.ts` 按以下顺序确定 Chromium 可执行文件，命中即止：
+
+1. 环境变量 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`；
+2. 路径 `/usr/bin/chromium`（Linux 常见路径，**Windows 下通常不存在**）；
+3. 以上皆为空时使用 Playwright 自带 Chromium，未安装则先执行 `npx.cmd playwright install chromium`（Git Bash / macOS 用 `npx playwright install chromium`）。
+
+Windows 用本机 Chrome 运行测试，只需在当前终端设置该变量（进程级，不写入仓库、不改系统环境变量）：
+
+```powershell
+# PowerShell（仓库根目录）
+$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+npm.cmd run test:e2e
+```
+
+```bash
+# Git Bash
+export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="C:/Program Files/Google/Chrome/Application/chrome.exe"
+npm run test:e2e
+```
+
+Chrome 通常为系统级安装：`C:\Program Files\Google\Chrome\Application\chrome.exe`；少数为用户级安装：`%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe`。路径以本机实际位置为准，可用 PowerShell 确认：
+
+```powershell
+Test-Path "C:\Program Files\Google\Chrome\Application\chrome.exe"   # 返回 True 即可直接填入上面的变量
+```
+
+> Chrome 安装后通常**不在** `PATH` 中，因此 `where chrome`（cmd）在本机会返回“找不到文件”，不要据此判断没有安装 Chrome。
+
+> **PowerShell 注意**：Windows 客户端默认执行策略为 `Restricted`，此时裸写 `npm` / `npx` 会因 `.ps1` 包装脚本被拦截而报 `PSSecurityException`；改用 `npm.cmd` / `npx.cmd` 即可正常运行。`$env:VAR = "值"` 这种赋值不受执行策略影响，反斜杠路径会原样传给 Node 与 Playwright（本机实测：Node 读到的值即为该路径，`existsSync` 为 `true`）。
+
+实测 Windows 11 + Node 22.22.2 + 本机 Chrome 155.0.8059.85 可跑通全部 18 条用例（该结论来自 **Git Bash** 下的完整运行），不需要下载 Playwright 自带浏览器。
 
 ## 推荐演示流程
 
@@ -49,6 +83,11 @@ npm run test:e2e
 
 ## 课程体系
 
+**这里有两个不同层次，不要混为一谈：**
+
+- **入口层（当前生效）**：首页的「探索学习方向」与 `/learn` 都按 `src/data/courses.ts` 的 `groups` 渲染，共 **5 个学习方向**，路由为 `/learn/foundation`、`/learn/classical`、`/learn/folk`、`/learn/interest`、`/learn/support`。
+- **旧版四大入口**：`classical`、`folk`、`posture`、`rhythm` 是本项目早期（第一阶段之前）的四个入口。其中 `classical`、`folk` 现在是 A、B 两组的正式 slug（同名延续）；`posture`、`rhythm` 已归入 S 教学支持，**仅作为旧路由别名保留**——`/learn/posture`、`/learn/rhythm` 仍返回 200 并等价于 S 组内容，不要再当作与五组并列的第 3、4 个入口。其旧数据文件 `src/data/categories.ts` 当前已无代码引用。
+
 首页使用容易理解的中文；教材管理分组为：
 
 - F 通用基础：F0安全认知、F1身体排列、F2活动度/柔韧/基础力量、F3节奏乐感、F4协调重心舞步、F5审美表达。8节导学交叉安排基础、动态热身与整理放松，不要求先学完理论才跳舞。
@@ -62,6 +101,8 @@ npm run test:e2e
 ## 目录与模块
 
 - `src/data/courses.ts`：五组课程、8节基础导学、三视角可替换资源、演示段落与音乐时间轴。
+- `src/data/categories.ts`：旧版四大学习方向（古典舞、民族民间舞、体态拉伸、节奏）的演示数据。PR #1 之后首页与 `/learn` 已改为按 `courses.ts` 的五组渲染，**此文件当前无代码引用**，保留供旧版对照；其中 `posture`、`rhythm` 现已作为旧路由别名归入 S 组（见「课程体系」）。
+- `src/app/not-found.tsx`：未知路由的中文 404 页面，引导返回首页。
 - `src/lib/learning-types.ts`：课程、教学段落、节拍、乐句、进度、匿名水印会话、答疑模型及未来服务接口。
 - `src/lib/music-timeline.ts`：按视频时间查询拍点与乐句，暂停、拖动、变速、循环均不依赖独立动画计时。
 - `src/lib/platform-contracts.ts`：登录、云进度、课程权益与教师工作台的扩展类型协议，仅接口，未连接服务。
