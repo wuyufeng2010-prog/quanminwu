@@ -2,12 +2,13 @@
 
 - 在现有 checkout 中工作；云任务已经隔离，除非用户明确要求，不创建 Git worktree。
 - 技术栈为 Next.js App Router + TypeScript + Tailwind CSS；使用 npm，保留并更新 package-lock.json，优先 `npm ci`。
-- 推荐 Node.js 24。开发 `npm run dev`；验证 `npm run lint`、`npm run typecheck`、`npm run build`；生产本地验证 `npm run start`。
+- 推荐 Node.js 24 LTS；Node.js 22.22.2 已实测可完整跑通全部脚本（`engines` 要求 `>=22.0.0`）。开发 `npm run dev`；验证 `npm run lint`、`npm run typecheck`、`npm run build`；生产本地验证 `npm run start`。
 - 页面使用简体中文，以18—65岁成人为目标；手机优先，正文清晰，交互点击区域至少44px，保留键盘焦点和减少动态效果支持。
 - 数据必须明确标记为演示。不得虚构真实课程、教师、销量、评价或教学效果；规划中的能力要标明尚未开放。
 - 未获明确授权，不接入真实支付、用户数据库、AI 服务，不部署、不购买资源，不保存或提交密钥。
 - 不强制推送；推送前检查远端变化，保留用户修改。新增业务功能需同步更新 README。
 - 四大学习入口必须可访问；保留手机横屏教学所需的16:9视频区域及内容、练习、答疑导航。
+- 入口的层次不要混用：当前**方向/入口**以 `courses.ts` 的五组 `groups`（F/A/B/C/S）为准，首页与 `/learn` 都按它渲染；早期四大入口中的 `classical`、`folk` 已是 A、B 组的正式 slug，`posture`、`rhythm` 作为**旧路由别名**归入 S 教学支持并保持可访问，不得删除或改为 404。`src/data/categories.ts` 为旧版数据，已无代码引用，改动导航时以 `courses.ts` 为准。
 
 ## 播放器与演示数据
 
