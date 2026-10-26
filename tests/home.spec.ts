@@ -16,7 +16,11 @@ test("首页五组入口、筹备说明与技术演示链接", async ({ page }) 
   await expect(page.locator("#sample")).toContainText("筹备中 · 尚未开放");
   await expect(page.locator("#sample")).toContainText("上线时间待确认");
   await expect(page.locator('section[aria-labelledby="hero-title"] figcaption')).toContainText("AI 品牌意象 · 非真实教学场景");
-  await expect(catalog.locator("img")).toHaveCount(5);
+  await expect(catalog.locator("[data-course-cover]")).toHaveCount(5);
+  await expect(catalog.locator("img")).toHaveCount(0);
+  await expect(catalog.locator('[data-course-cover="B"]')).toContainText("维吾尔族舞");
+  await expect(catalog.locator('[data-course-cover="C"]')).toContainText("成品舞教学");
+  await expect(page.locator('section[aria-labelledby="hero-title"]')).toContainText("18–65 岁");
   await expect(page.locator("#method")).toContainText("功能示意");
   await page.locator("summary").filter({ hasText: "现在可以看真实样课或报名吗？" }).click();
   await expect(page.locator("details[open]")).toContainText("没有真实教师接收");

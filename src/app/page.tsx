@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { groups } from "@/data/courses";
+import { courses, groups, folkStyles, interestTopics, supportTopics } from "@/data/courses";
 import HomeNavigation from "@/components/home-navigation";
 import styles from "./home.module.css";
 
@@ -18,9 +18,33 @@ const groupNotes: Record<string, string> = {
   S: "日常热身 · 节奏练习 · 安全调整",
 };
 
-const groupImages: Record<string, string> = {
-  F: "foundation", A: "classical", B: "folk", C: "interest", S: "support",
-};
+function CourseCover({ code }: { code: string }) {
+  const focus = courses.find((course) => course.group === code)?.focus ?? [];
+  return <div className={`${styles.courseCover} ${styles[`cover${code}`]}`} data-course-cover={code}>
+    {code === "F" ? <>
+      <span className={styles.coverKicker}>从身体认识，到听懂节拍</span>
+      <span className={styles.coverHeadline}>找到身体的<br />第一拍。</span>
+      <div className={styles.coverBeats}>{[1, 2, 3, 4, 5, 6, 7, 8].map((beat) => <span key={beat}>{beat}</span>)}</div>
+      <small>自然站姿 / 基本拍 / 重心与协调</small>
+    </> : code === "A" ? <>
+      <span className={styles.coverKicker}>基础手位与身韵初识</span>
+      <div className={styles.classicalWords}><span>身</span><span>韵</span></div>
+      <div className={styles.coverTopics}>{focus.slice(0, 3).map((item) => <span key={item}>{item}</span>)}</div>
+    </> : code === "B" ? <>
+      <span className={styles.coverKicker}>不同文化，各有动律</span>
+      <div className={styles.folkNames}>{folkStyles.map((style) => <span key={style}>{style}</span>)}</div>
+      <small>文化背景 / 地域风格 / 典型动律</small>
+    </> : code === "C" ? <>
+      <span className={styles.coverKicker}>从兴趣，走向一段作品</span>
+      <span className={styles.coverHeadline}>喜欢，就开始。</span>
+      <div className={styles.interestNames}>{interestTopics.map((topic) => <span key={topic}>{topic}</span>)}</div>
+    </> : <>
+      <span className={styles.coverKicker}>配合身体状态，辅助日常练习</span>
+      <span className={styles.coverHeadline}>练习，也有照应。</span>
+      <div className={styles.supportNames}>{supportTopics.map((topic) => <span key={topic}>{topic}</span>)}</div>
+    </>}
+  </div>;
+}
 
 function MethodPreview({ kind }: { kind: "player" | "beats" | "notes" }) {
   return <div className={styles.methodPreview} aria-hidden="true">
@@ -58,10 +82,10 @@ export default function Home() {
       <main id="main" tabIndex={-1}>
         <section className={`${styles.hero} ${styles.container}`} aria-labelledby="hero-title">
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>成人中国舞 · 每个人，都有自己的舞步</p>
+            <p className={styles.eyebrow}>18–65 岁成人中国舞 · 每个人，都有自己的舞步</p>
             <h1 id="hero-title">从喜欢开始，<br />让舞蹈走进生活<span className={styles.fullStop}>。</span></h1>
             <span className={styles.redLine} aria-hidden="true" />
-            <p className={styles.lead}>面向成人的中国舞学习，从基础认识、动作练习到舞蹈表达，找到适合自己的起点。</p>
+            <p className={styles.lead}>面向 18–65 岁成人的中国舞学习，从基础认识、动作练习到舞蹈表达，找到适合自己的起点。</p>
             <div className={styles.actions}>
               <a href="#explore" className={styles.primary}>探索学习方向 <span aria-hidden="true">↗</span></a>
               <a href="#method" className={styles.secondary}>了解学习方式 <span aria-hidden="true">→</span></a>
@@ -85,7 +109,7 @@ export default function Home() {
             <figcaption><span>第一步，认真准备。</span><small>AI 备课意象 · 非真实备课记录</small></figcaption>
           </figure>
           <div className={styles.sampleCopy}>
-            <p className={styles.eyebrow}>第一支真实样课 / IN THE MAKING</p>
+            <p className={styles.eyebrow}>第一支真实样课</p>
             <span className={styles.status}>筹备中 · 尚未开放</span>
             <h2 id="sample-title">先做好一节，<br />值得跟着学的课。</h2>
             <p>接下来，我们将围绕成人中国舞制作真实在线样课，让动作讲解、示范与练习衔接起来。</p>
@@ -101,19 +125,16 @@ export default function Home() {
 
         <section id="explore" className={`${styles.explore} ${styles.container}`} aria-labelledby="explore-title">
           <div className={styles.sectionHeading}>
-            <div><p className={styles.eyebrow}>五组课程方向 / FIND YOUR WAY</p><h2 id="explore-title">找到你的学习起点</h2></div>
+            <div><p className={styles.eyebrow}>五组课程，按兴趣与基础选择</p><h2 id="explore-title">找到你的学习起点</h2></div>
             <p>基础可以边跳边学。<br />从兴趣出发，也从容向前。</p>
           </div>
-          <p className={styles.catalogNotice}>以下为课程体系与学习方向演示，真实课程及教师服务尚未开放。配图均为 AI 品牌意象，不代表实际教学场景或具体民族舞种示范。</p>
+          <p className={styles.catalogNotice}>封面根据课程大纲呈现学习主题，不是动作示范。当前为课程结构演示，真实教学视频与教师服务尚未开放。</p>
           <div className={styles.groupGrid}>
             {groups.map((group) => (
               <Link href={`/learn/${group.slug}`} key={group.code} className={`${styles.group} ${group.code === "F" ? styles.foundation : ""}`}>
-                <div className={styles.groupImage}>
-                  <Image src={`/images/direction-${groupImages[group.code]}.webp`} alt="" width={1536} height={1024} sizes="(max-width: 760px) 100vw, 46vw" />
-                  <span>AI 品牌意象</span>
-                </div>
+                <CourseCover code={group.code} />
                 <div className={styles.groupText}>
-                <span className={styles.groupCode} aria-hidden="true">{group.code}<span> / {group.code === "F" ? "FOUNDATION" : group.code === "A" ? "CLASSICAL" : group.code === "B" ? "FOLK" : group.code === "C" ? "INTEREST" : "SUPPORT"}</span></span>
+                <span className={styles.groupCode} aria-hidden="true">{group.code}<span>课程方向</span></span>
                 <div className={styles.groupBody}><h3>{group.title}</h3><p>{group.subtitle}</p><small>{groupNotes[group.code]}</small></div>
                 <span className={styles.groupLink}>查看方向 <span aria-hidden="true">↗</span></span>
                 </div>
@@ -126,7 +147,7 @@ export default function Home() {
 
         <section id="method" className={styles.method} aria-labelledby="method-title">
           <div className={styles.container}>
-            <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>按自己的节奏 / YOUR OWN PACE</p><h2 id="method-title">把练习，变成更清楚的小步。</h2></div><p>以下为可操作的技术原型。<br />教学内容与教师服务尚未接入。</p></div>
+            <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>按自己的节奏练习</p><h2 id="method-title">把练习，变成更清楚的小步。</h2></div><p>以下为可操作的技术原型。<br />教学内容与教师服务尚未接入。</p></div>
             <p className={styles.methodNotice}>功能示意 · 下方图形不是正在播放的教学画面，实际操作请进入技术演示播放器。</p>
             <div className={styles.steps}>
               <article><MethodPreview kind="player" /><span>01 / 看清楚</span><h3>动作，可以慢慢看。</h3><p>体验慢速播放、镜像翻转与分段循环，了解适合手机横屏的练习界面。</p><small>三视角通道当前使用图形技术测试片，非舞蹈示范。</small></article>
@@ -138,15 +159,15 @@ export default function Home() {
         </section>
 
         <section className={`${styles.faq} ${styles.container}`} aria-labelledby="faq-title">
-          <div><p className={styles.eyebrow}>开始之前 / A FEW QUESTIONS</p><h2 id="faq-title">你可能想先知道</h2><span className={styles.redLine} aria-hidden="true" /><p className={styles.faqNote}>把疑问说清楚，<br />也让第一步更从容。</p></div>
+          <div><p className={styles.eyebrow}>开始之前</p><h2 id="faq-title">你可能想先知道</h2><span className={styles.redLine} aria-hidden="true" /><p className={styles.faqNote}>把疑问说清楚，<br />也让第一步更从容。</p></div>
           <div>{questions.map(([question, answer]) => <details key={question}><summary>{question}<span aria-hidden="true">＋</span></summary><p>{answer}</p></details>)}</div>
         </section>
 
         <section id="about" className={`${styles.about} ${styles.container}`} aria-labelledby="about-title">
-          <p className={styles.eyebrow}>关于全民舞 / DANCE BELONGS TO EVERYONE</p>
+          <p className={styles.eyebrow}>关于全民舞</p>
           <div className={styles.brandValues} aria-label="全民舞的三个关键词"><span>每个人<small>EVERYONE</small></span><i aria-hidden="true">·</i><span>每一天<small>EVERYDAY</small></span><i aria-hidden="true">·</i><span>每一步<small>EVERY STEP</small></span></div>
           <h2 id="about-title">各有舞步，也能一起起舞。</h2>
-          <p>“全民”，是尊重不同年龄、基础与身体状态；<br />“舞”，是从身体与节奏出发，慢慢找到自己的表达。</p>
+          <p>从刚开始探索的青年，到把舞蹈带进日常的成熟成人，<br />年龄不决定舞种，也不代表能力。我们尊重不同基础、身形与身体状态。</p>
           <p>我们希望，让成人中国舞的学习更清晰，也更贴近日常。</p>
           <p className={styles.safety}>练习请量力而行；疼痛或不适时立即停止。有伤病或运动限制，请先咨询专业人士。</p>
         </section>
