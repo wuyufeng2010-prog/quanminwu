@@ -15,7 +15,9 @@ test("首页五组入口、筹备说明与技术演示链接", async ({ page }) 
   }
   await expect(page.locator("#sample")).toContainText("筹备中 · 尚未开放");
   await expect(page.locator("#sample")).toContainText("上线时间待确认");
-  await expect(page.locator("figcaption")).toContainText("AI 品牌意象 · 非真实教学场景");
+  await expect(page.locator('section[aria-labelledby="hero-title"] figcaption')).toContainText("AI 品牌意象 · 非真实教学场景");
+  await expect(catalog.locator("img")).toHaveCount(5);
+  await expect(page.locator("#method")).toContainText("功能示意");
   await page.locator("summary").filter({ hasText: "现在可以看真实样课或报名吗？" }).click();
   await expect(page.locator("details[open]")).toContainText("没有真实教师接收");
   await page.getByRole("link", { name: "体验技术演示播放器" }).click();
@@ -28,13 +30,20 @@ for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     await expect(page.locator("#hero-title")).toBeVisible();
-    await expect.poll(() => page.locator("main img").evaluateAll((images) => images.every((img) => (img as HTMLImageElement).naturalWidth > 0))).toBe(true);
+    for (const image of await page.locator("main img").all()) {
+      await image.scrollIntoViewIfNeeded();
+      await expect.poll(() => image.evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    }
     await expect.poll(() => page.locator("header img").evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await expect(page.locator("#explore h3")).toHaveCount(5);
-    const heroBox = await page.locator("main img").boundingBox();
+    const heroBox = await page.locator('section[aria-labelledby="hero-title"] img').boundingBox();
     expect(heroBox).not.toBeNull();
     expect(heroBox!.width / heroBox!.height).toBeCloseTo(1.5, 1);
+    const classical = await page.locator('#explore a[href="/learn/classical"]').boundingBox();
+    const folk = await page.locator('#explore a[href="/learn/folk"]').boundingBox();
+    expect(classical!.width).toBeCloseTo(folk!.width, 0);
+    if (width >= 761) expect(classical!.y).toBeCloseTo(folk!.y, 0);
     if (width < 761) {
       const menu = page.locator('summary[aria-label="打开或关闭导航菜单"]');
       await menu.click();
