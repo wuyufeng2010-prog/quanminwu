@@ -40,3 +40,11 @@
 - [北京健美操体育舞蹈协会转载教材：古典舞手形、手位与舞姿](https://www.badsa.org.cn/a/newindex/24187.html)：辅助核对术语；不将转载页面或照片直接当成自有素材。
 
 外部参考未授予图片使用许可，本轮不下载并挪用其教学照片。真实课程图片的来源、授权、动作与文化准确性仍需逐张确认。
+
+## 用户反馈与协同修正
+
+样课区需要体现动作示范、分解与跟练，备课桌/笔记本不能代表“值得跟着学的课”。已撤下该静物，先明确显示真实教学示范画面待补；不把占位状态宣称为图片制作完成。
+
+另已只读审查 [elayadesign/ai-design-skills](https://github.com/elayadesign/ai-design-skills/blob/a2735a3eaf092eaaffb6dc17df25de33ef3bd048/skills/landing-page-design/SKILL.md) 及其现有站点改版配套 [redesign-existing-projects](https://github.com/elayadesign/redesign-skill/blob/7df13f6a289f4a7f91c5fe3efd70f51fd584ec28/skills/redesign-existing-projects/SKILL.md)。采用其先诊断、分模块改进、保留技术栈、可用状态和统一设计规范的方法；虚构客户/评价/数字、强制英文网站字体与重复动效等要求不适用于本项目，服从真实内容与已确认中文品牌约束。未安装或运行第三方代码，未覆盖AGENTS.md。
+
+WorkBuddy侧现有轮询处于影子模式，不能把GitHub任务记录等同于已领取。已尝试在原“搭建全民舞 AI 协同工作站”会话准备独立只读评审，但发送按钮禁用，未确认送达。后续应由WorkBuddy实际产出课程与配图匹配评审，再由Codex实施；不得将Codex自己的结论当成WorkBuddy独立验收。

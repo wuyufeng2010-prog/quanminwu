@@ -48,6 +48,10 @@
 .sample { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 80px; padding-block: 88px; }
 .sampleFigure { margin: 0; min-width: 0; }
 .sampleFigure > img { width: 100%; height: auto; display: block; }
+.lessonPlaceholder { aspect-ratio: 16 / 9; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; background: #e7e9df; text-align: center; padding: 24px; }
+.lessonMark { display: grid; place-items: center; width: 56px; height: 56px; border: 1px solid #9b9f8d; border-radius: 50%; color: var(--home-red); font-size: 20px; }
+.lessonPlaceholder p { font-family: "Songti SC", SimSun, serif; font-size: 24px; }
+.lessonPlaceholder small { font-size: 13px; color: var(--home-muted); }
 .sampleFigure figcaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-block: 14px; border-bottom: 1px solid var(--home-line); font-family: "Songti SC", SimSun, serif; font-size: 18px; }
 .sampleFigure figcaption small { font-family: Arial, "Microsoft YaHei", sans-serif; color: var(--home-muted); font-size: 10px; align-self: center; }
 .sampleCopy > p.eyebrow { color: var(--home-red); font-size: 11px; margin-top: 0; margin-bottom: 16px; }

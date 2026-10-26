@@ -15,6 +15,8 @@ test("首页五组入口、筹备说明与技术演示链接", async ({ page }) 
   }
   await expect(page.locator("#sample")).toContainText("筹备中 · 尚未开放");
   await expect(page.locator("#sample")).toContainText("上线时间待确认");
+  await expect(page.locator("#sample img")).toHaveCount(0);
+  await expect(page.locator("#sample")).toContainText("真实教学示范画面待补");
   await expect(page.locator('section[aria-labelledby="hero-title"] figcaption')).toContainText("AI 品牌意象 · 非真实教学场景");
   await expect(catalog.locator("[data-course-cover]")).toHaveCount(5);
   await expect(catalog.locator("img")).toHaveCount(0);

@@ -105,8 +105,12 @@ export default function Home() {
 
         <section id="sample" className={`${styles.sample} ${styles.container}`} aria-labelledby="sample-title">
           <figure className={styles.sampleFigure}>
-            <Image src="/images/direction-support.webp" alt="AI 品牌意象：阳光舞房里的练习笔记与备课用品，非真实备课记录" width={1536} height={1024} sizes="(max-width: 760px) 100vw, 45vw" />
-            <figcaption><span>第一步，认真准备。</span><small>AI 备课意象 · 非真实备课记录</small></figcaption>
+            <div className={styles.lessonPlaceholder}>
+              <span className={styles.lessonMark} aria-hidden="true">▶</span>
+              <p>真实教学示范画面待补</p>
+              <small>动作示范 / 分解讲解 / 跟练</small>
+            </div>
+            <figcaption><span>让动作看得清，让练习跟得上。</span><small>教学素材待确认，尚无真实样课</small></figcaption>
           </figure>
           <div className={styles.sampleCopy}>
             <p className={styles.eyebrow}>第一支真实样课</p>
