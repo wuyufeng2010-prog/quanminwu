@@ -45,23 +45,23 @@
 .manifesto > span { font-size: 12px; color: var(--home-muted); letter-spacing: 1px; white-space: nowrap; }
 .manifesto i { color: #b8a99a; font-style: normal; margin-inline: 10px; }
 .mobileBreak { display: none; }
-.sample { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 80px; padding-block: 88px; }
-.sampleFigure { margin: 0; min-width: 0; }
+.sample { display: grid; grid-template-columns: 1fr .85fr; align-items: center; gap: 48px 64px; padding-block: 80px; }
+.sampleFigure { margin: 0; min-width: 0; width: 100%; max-width: 460px; justify-self: end; }
 .sampleFigure > img { width: 100%; height: auto; display: block; }
-.lessonPlaceholder { aspect-ratio: 16 / 9; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; background: #e7e9df; text-align: center; padding: 24px; }
-.lessonMark { display: grid; place-items: center; width: 56px; height: 56px; border: 1px solid #9b9f8d; border-radius: 50%; color: var(--home-red); font-size: 20px; }
-.lessonPlaceholder p { font-family: "Songti SC", SimSun, serif; font-size: 24px; }
-.lessonPlaceholder small { font-size: 13px; color: var(--home-muted); }
 .sampleFigure figcaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-block: 14px; border-bottom: 1px solid var(--home-line); font-family: "Songti SC", SimSun, serif; font-size: 18px; }
 .sampleFigure figcaption small { font-family: Arial, "Microsoft YaHei", sans-serif; color: var(--home-muted); font-size: 10px; align-self: center; }
 .sampleCopy > p.eyebrow { color: var(--home-red); font-size: 11px; margin-top: 0; margin-bottom: 16px; }
-.preparation { padding: 0; margin: 24px 0 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--home-line); }
-.preparation li { padding: 16px 12px 16px 0; font-size: 13px; }
-.preparation li > span { display: block; color: var(--home-red); font-family: Georgia, serif; font-size: 18px; margin-bottom: 6px; }
-.preparation small { display: block; color: var(--home-muted); font-size: 11px; margin-top: 4px; }
+.lessonOutline { grid-column: 1 / -1; margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--home-line); }
+.lessonOutline li { min-width: 0; padding: 28px; border-right: 1px solid var(--home-line); }
+.lessonOutline li:first-child { padding-left: 0; }
+.lessonOutline li:last-child { border-right: 0; }
+.lessonOutline li > span { color: var(--home-red); font-size: 12px; }
+.lessonOutline h3 { font-family: "Songti SC", SimSun, serif; font-size: 23px; font-weight: 500; line-height: 1.6; margin-top: 10px; }
+.lessonOutline p { font-size: 14px; color: var(--home-muted); margin-top: 10px; }
 .status { display: inline-block; padding: 4px 12px; background: #eee4d8; border-radius: 3px; color: #78583d; font-size: 12px; }
-.sampleCopy h2 { margin-top: 16px; font-family: "Songti SC", SimSun, serif; font-size: clamp(28px, 3vw, 38px); font-weight: 500; line-height: 1.6; }
+.sample .sampleCopy h2 { margin-top: 16px; font-family: "Songti SC", SimSun, serif; font-size: clamp(36px, 4.1vw, 56px); font-weight: 500; line-height: 1.5; }
 .sampleCopy > p { font-size: 15px; margin-top: 18px; color: var(--home-muted); max-width: 440px; }
+.sampleCopy > p.lessonName { color: var(--home-ink); font-size: 17px; margin-top: 24px; }
 .sampleCopy > p.small { font-size: 13px; }
 .underlined { font-size: 14px; border-bottom: 1px solid #a79b8c; margin-top: 20px; }
 .explore { padding-block: 10px 82px; }
@@ -195,7 +195,11 @@
   .manifesto > span { font-size: 11px; }
   .manifesto i { margin-inline: 5px; }
   .sample { grid-template-columns: 1fr; gap: 26px; padding-block: 48px; }
-  .sampleCopy h2 { font-size: 29px; }
+  .sampleFigure { max-width: none; }
+  .sample .sampleCopy h2 { font-size: 34px; }
+  .lessonOutline { grid-template-columns: 1fr; }
+  .lessonOutline li, .lessonOutline li:first-child { padding: 22px 0; border-right: 0; border-bottom: 1px solid var(--home-line); }
+  .lessonOutline li:last-child { border-bottom: 0; }
   .explore { padding-block: 10px 48px; }
   .sectionHeading { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
   .sectionHeading .eyebrow, .faq .eyebrow { font-size: 10px; letter-spacing: 1px; }

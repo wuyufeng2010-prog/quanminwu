@@ -15,8 +15,18 @@ test("首页五组入口、筹备说明与技术演示链接", async ({ page }) 
   }
   await expect(page.locator("#sample")).toContainText("筹备中 · 尚未开放");
   await expect(page.locator("#sample")).toContainText("上线时间待确认");
-  await expect(page.locator("#sample img")).toHaveCount(0);
-  await expect(page.locator("#sample")).toContainText("真实教学示范画面待补");
+  const sample = page.locator("#sample");
+  await expect(sample.locator("img")).toHaveCount(1);
+  await expect(sample.locator("figcaption")).toContainText("AI 设计概念 · 非动作教学依据");
+  await expect(sample).toContainText("身体认知、自然站姿和听基本拍");
+  await expect(sample.locator("ol li")).toHaveCount(3);
+  await expect(sample).not.toContainText("八拍踏步");
+  await expect(sample).not.toContainText("24秒");
+  await expect(sample).not.toContainText("120");
+  await sample.getByRole("link", { name: "了解第一课结构演示" }).click();
+  await expect(page).toHaveURL(/\/courses\/foundation-1$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("身体认知、自然站姿和听基本拍");
+  await page.goto("/");
   await expect(page.locator('section[aria-labelledby="hero-title"] figcaption')).toContainText("AI 品牌意象 · 非真实教学场景");
   await expect(catalog.locator("[data-course-cover]")).toHaveCount(5);
   await expect(catalog.locator("img")).toHaveCount(0);

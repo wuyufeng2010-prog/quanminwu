@@ -18,6 +18,14 @@ const groupNotes: Record<string, string> = {
   S: "日常热身 · 节奏练习 · 安全调整",
 };
 
+const firstLesson = courses.find((course) => course.id === "foundation-1")!;
+
+const lessonOutline = [
+  { topic: "认识身体", title: "从感受开始。", description: "认识自己的身体感受，为进入练习做准备。" },
+  { topic: "观察站姿", title: "先站得自在。", description: "从正面与侧面观察自然站姿，具体动作由教师确认。" },
+  { topic: "听基本拍", title: "听见，再慢慢跟上。", description: "先尝试听出基本拍，不急着加入复杂的动作组合。" },
+];
+
 function CourseCover({ code }: { code: string }) {
   const focus = courses.find((course) => course.group === code)?.focus ?? [];
   return <div className={`${styles.courseCover} ${styles[`cover${code}`]}`} data-course-cover={code}>
@@ -104,27 +112,22 @@ export default function Home() {
         </div>
 
         <section id="sample" className={`${styles.sample} ${styles.container}`} aria-labelledby="sample-title">
-          <figure className={styles.sampleFigure}>
-            <div className={styles.lessonPlaceholder}>
-              <span className={styles.lessonMark} aria-hidden="true">▶</span>
-              <p>真实教学示范画面待补</p>
-              <small>动作示范 / 分解讲解 / 跟练</small>
-            </div>
-            <figcaption><span>让动作看得清，让练习跟得上。</span><small>教学素材待确认，尚无真实样课</small></figcaption>
-          </figure>
           <div className={styles.sampleCopy}>
-            <p className={styles.eyebrow}>第一支真实样课</p>
+            <p className={styles.eyebrow}>F 通用基础 · 第一课方案</p>
             <span className={styles.status}>筹备中 · 尚未开放</span>
-            <h2 id="sample-title">先做好一节，<br />值得跟着学的课。</h2>
-            <p>接下来，我们将围绕成人中国舞制作真实在线样课，让动作讲解、示范与练习衔接起来。</p>
-            <p className={styles.small}>样课主题、教师、素材与上线时间待确认。当前可浏览课程结构与技术演示，尚无真实教学内容。</p>
-            <ol className={styles.preparation} aria-label="样课筹备事项，均待确认">
-              <li><span>01</span>教学主题<small>待确认</small></li>
-              <li><span>02</span>示范素材<small>待确认</small></li>
-              <li><span>03</span>教学验收<small>待确认</small></li>
-            </ol>
-            <Link href="/courses/classical-intro" className={styles.underlined}>先看古典舞课程结构演示 <span aria-hidden="true">↗</span></Link>
+            <h2 id="sample-title">先站得自在，<br />再听见节奏<span className={styles.fullStop}>。</span></h2>
+            <p className={styles.lessonName}>{firstLesson.title}</p>
+            <p>{firstLesson.description}</p>
+            <Link href={`/courses/${firstLesson.id}`} className={styles.underlined}>了解第一课结构演示 <span aria-hidden="true">↗</span></Link>
+            <p className={styles.small}>样课拟从这节基础课开始。教师、教学动作、正式时长与上线时间待确认，尚无真实教学视频。</p>
           </div>
+          <figure className={styles.sampleFigure}>
+            <Image src="/images/lesson-01-studio-concept.webp" alt="AI 设计概念：一位成人在暖白舞房中自然站立，全身及双脚可见，非真实教师或动作教学示范" width={1024} height={1280} sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1100px) 42vw, 460px" />
+            <figcaption><span>从认识身体开始。</span><small>AI 设计概念 · 非动作教学依据</small></figcaption>
+          </figure>
+          <ol className={styles.lessonOutline} aria-label="第一课内容策划，待教师审校">
+            {lessonOutline.map((item) => <li key={item.topic}><span>{item.topic}</span><h3>{item.title}</h3><p>{item.description}</p></li>)}
+          </ol>
         </section>
 
         <section id="explore" className={`${styles.explore} ${styles.container}`} aria-labelledby="explore-title">

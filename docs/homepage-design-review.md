@@ -47,4 +47,10 @@
 
 另已只读审查 [elayadesign/ai-design-skills](https://github.com/elayadesign/ai-design-skills/blob/a2735a3eaf092eaaffb6dc17df25de33ef3bd048/skills/landing-page-design/SKILL.md) 及其现有站点改版配套 [redesign-existing-projects](https://github.com/elayadesign/redesign-skill/blob/7df13f6a289f4a7f91c5fe3efd70f51fd584ec28/skills/redesign-existing-projects/SKILL.md)。采用其先诊断、分模块改进、保留技术栈、可用状态和统一设计规范的方法；虚构客户/评价/数字、强制英文网站字体与重复动效等要求不适用于本项目，服从真实内容与已确认中文品牌约束。未安装或运行第三方代码，未覆盖AGENTS.md。
 
-WorkBuddy侧现有轮询处于影子模式，不能把GitHub任务记录等同于已领取。已尝试在原“搭建全民舞 AI 协同工作站”会话准备独立只读评审，但发送按钮禁用，未确认送达。后续应由WorkBuddy实际产出课程与配图匹配评审，再由Codex实施；不得将Codex自己的结论当成WorkBuddy独立验收。
+## 第一课模块实施（2026-10-27）
+
+用户已选“清透当代舞房”：暖白、木色、日常练功服、自然笑容。将图片概念推进为实际首页模块：文案先于图片出现在手机端；AI 人物图完整保留头部和双脚；三个内容策划条目围绕认识身体、观察自然站姿、听基本拍。课程名、简介与入口对应 `courses.ts` 的 `foundation-1`，不再跳往古典舞导学。
+
+首页不使用24秒/120 BPM技术测试模板作为授课依据，不把第三课八拍踏步移入第一课。图片是场景与构图概念，非真实教师、授课截图或动作规范。具体动作、教师、正式时长和上线时间仍待确认。本轮未修改课程数据或播放器。
+
+协同证据：[WB-015独立评审](https://github.com/wuyufeng2010-prog/quanminwu/issues/10#issuecomment-6413788420)已实际回传。该评审误将技术模板用于教学方案，因此已在[WB-016](https://github.com/wuyufeng2010-prog/quanminwu/issues/11)明确要求纠正并补交可用提示词。截至本轮开工检查，WB-016无回帖；不能称为已领取或独立验收通过。本次实施与图片由Codex完成，不冒充WorkBuddy返工。
